@@ -1,0 +1,7 @@
+transformers
+fastapi
+uvicorn
+onnxruntime
+pydub
+pytube
+python-multipart
