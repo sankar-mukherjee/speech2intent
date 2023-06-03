@@ -63,8 +63,8 @@ if __name__ == "__main__":
     #     quantize_onnx_model(onnx_model_name, save_path + '/' + model_name + ".quant.onnx")
 
     model_id_or_path = args.model
-    onnx_model_name = model_id_or_path.split("/")[-1] + ".onnx"
+    onnx_model_name = 'models/' + model_id_or_path.split("/")[-1] + ".onnx"
     convert_to_onnx(model_id_or_path, onnx_model_name)
     if (args.quantize):
-        quantized_model_name = model_id_or_path.split("/")[-1] + ".quant.onnx"
+        quantized_model_name = 'models/' + model_id_or_path.split("/")[-1] + ".quant.onnx"
         quantize_onnx_model(onnx_model_name, quantized_model_name)

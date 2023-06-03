@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Form
-from typing import Annotated
 from transformers import Wav2Vec2Processor
 import onnxruntime as rt
 import soundfile as sf
@@ -34,7 +33,7 @@ def load_asr_session():
     """
     processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
 
-    ONNX_PATH = 'wav2vec2-base-960h.onnx'
+    ONNX_PATH = 'models/wav2vec2-base-960h.onnx'
 
     sess_options = rt.SessionOptions()
     sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
