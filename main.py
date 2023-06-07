@@ -1,35 +1,18 @@
-from fastapi import FastAPI, Form
-from transformers import Wav2Vec2Processor
+import numpy as np
 import onnxruntime as rt
 import soundfile as sf
-import numpy as np
-from transformers import AutoTokenizer, XLMRobertaForSequenceClassification
-from pydantic import BaseModel
 import uvicorn
+from fastapi import FastAPI
+from transformers import (AutoTokenizer, Wav2Vec2Processor,
+                          XLMRobertaForSequenceClassification)
 
-# custom types
-class speech2intent_input(BaseModel):
-    nlu_url: str = 'cartesinus/slurp-intent_baseline-xlm_r-en'
-    speech_file_path: str
-
-class asr_input(BaseModel):
-    speech_file_path: str
-
-class nlu_input(BaseModel):
-    nlu_model_path: str = 'cartesinus/slurp-intent_baseline-xlm_r-en'
-    text_input: str
-
-    def get_model_path():
-        return 'cartesinus/slurp-intent_baseline-xlm_r-en'
-
-class speech2intent_output(BaseModel):
-    text: str
-    intent: str
+from settings import (asr_input, nlu_input, nlu_model, speech2intent_input,
+                      speech2intent_output)
 
 
 def load_asr_session():
     """
-    load the onnxruntime
+    load the onnx model
     """
     processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
 
@@ -39,22 +22,20 @@ def load_asr_session():
     sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
     session = rt.InferenceSession(ONNX_PATH, sess_options)
 
-    print("onnxruntime session created")
+    print("onnxruntime session created with "+ ONNX_PATH)
     return processor, session
 
-def load_nlu_session(nlu_model_path):
+def load_nlu_session(nlu_model_url):
     """
     load the nlu model
     """
-    tokenizer = AutoTokenizer.from_pretrained(nlu_model_path)
-    model = XLMRobertaForSequenceClassification.from_pretrained(nlu_model_path)
+    tokenizer = AutoTokenizer.from_pretrained(nlu_model_url)
+    model = XLMRobertaForSequenceClassification.from_pretrained(nlu_model_url)
 
-    print("nlu model loaded")
+    print("nlu model loaded " + nlu_model_url)
     return tokenizer, model
 
-global nlu_tokenizer, nlu_model
-
-nlu_tokenizer, nlu_model = load_nlu_session(nlu_input.get_model_path())
+session_nlu_tokenizer, session_nlu_model = load_nlu_session(nlu_model().url)
 asr_processor, asr_session = load_asr_session()
 
 app = FastAPI()
@@ -62,7 +43,6 @@ app = FastAPI()
 # ASR API
 @app.post("/asr/run_asr")
 def run_asr(user_input: asr_input):
-    print(user_input)
     speech_array, _ = sf.read(user_input.speech_file_path)
 
     features = asr_processor(speech_array, sampling_rate=16000, return_tensors="pt")
@@ -75,25 +55,20 @@ def run_asr(user_input: asr_input):
     print('run_asr finished')
     return {"transcript": transcript}
 
-def check_if_exists(nlu_model_path, nlu_tokenizer, nlu_model):
-    if nlu_model_path != nlu_input.nlu_model_path:
-        nlu_tokenizer, nlu_model = load_nlu_session(nlu_model_path)
-    return nlu_tokenizer, nlu_model
-
-
 # NLU API
 @app.post("/nlu/nlu_text_to_intent")
 def nlu_text_to_intent(user_input: nlu_input):
     text_input = user_input.text_input
-    nlu_model_path = user_input.nlu_model_path
+    nlu_model_url = user_input.nlu_model_url
 
     # new nlu model
-    nlu_tokenizer, nlu_model = check_if_exists(nlu_model_path, nlu_tokenizer, nlu_model)
+    if nlu_model_url != nlu_model().url:
+        session_nlu_tokenizer, session_nlu_model = load_nlu_session(nlu_model_url)
 
-    inputs = nlu_tokenizer(text_input, return_tensors="pt")
-    logits = nlu_model(**inputs).logits
+    inputs = session_nlu_tokenizer(text_input, return_tensors="pt")
+    logits = session_nlu_model(**inputs).logits
     predicted_class_id = logits.argmax().item()
-    output = nlu_model.config.id2label[predicted_class_id]
+    output = session_nlu_model.config.id2label[predicted_class_id]
 
     print('nlu_text_to_intent finished')
     return {"intent": output}
@@ -106,20 +81,21 @@ def speech_to_intent(user_input: speech2intent_input):
     speech_file_path = user_input.speech_file_path
 
     # Call ASR API
-    a = asr_input
-    setattr(a, 'speech_file_path', speech_file_path)
-    asr_response = run_asr(a)
+    asr_response = run_asr(asr_input(speech_file_path=speech_file_path))
 
     # Call NLU API
-    setattr(nlu_input, 'nlu_model_path', nlu_url)
-    setattr(nlu_input, 'text_input', asr_response["transcript"])
-    nlu_response = nlu_text_to_intent(nlu_input)
+    nlu_response = nlu_text_to_intent(
+            nlu_input(
+            nlu_model_path=nlu_url,
+            text_input=asr_response["transcript"]
+            )
+        )
 
     return {"text": asr_response["transcript"], "intent": nlu_response['intent']}
 
 @app.get("/")
 async def get_home():
-    return {"message": "speech_to_intent"}
+    return {"message": "speech_to_intent classifier"}
 
 
 if __name__ == "__main__":

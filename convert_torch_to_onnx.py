@@ -1,9 +1,6 @@
-from onnxruntime.quantization.quantize import quantize
 from transformers import Wav2Vec2ForCTC
 import torch
 import argparse
-
-# took that script from: https://github.com/ccoreilly/wav2vec2-service/blob/master/convert_torch_to_onnx.py
 
 def convert_to_onnx(model_id_or_path, onnx_model_name):
     print(f"Converting {model_id_or_path} to onnx")
@@ -40,12 +37,6 @@ if __name__ == "__main__":
         default="ccoreilly/wav2vec2-large-100k-voxpopuli-catala",
         help="Model HuggingFace ID or path that will converted to ONNX",
     )
-    # parser.add_argument(
-    #     "--output",
-    #     type=str,
-    #     default="models",
-    #     help="save model dir",
-    # )
     parser.add_argument(
         "--quantize",
         action="store_true",
@@ -53,15 +44,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # # save paths
-    # save_path = args.output
-    # model_name = args.model.split("/")[-1]
-    # onnx_model_name = save_path + '/' + model_name + ".onnx"
-
-    # convert_to_onnx(args.model, onnx_model_name)
-    # if (args.quantize):
-    #     quantize_onnx_model(onnx_model_name, save_path + '/' + model_name + ".quant.onnx")
-
+    # save paths
     model_id_or_path = args.model
     onnx_model_name = 'models/' + model_id_or_path.split("/")[-1] + ".onnx"
     convert_to_onnx(model_id_or_path, onnx_model_name)
