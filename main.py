@@ -1,10 +1,9 @@
 import numpy as np
 import onnxruntime as rt
 import soundfile as sf
-import uvicorn
 from fastapi import FastAPI
 from transformers import (AutoTokenizer, Wav2Vec2Processor,
-                          XLMRobertaForSequenceClassification)
+                          AutoModelForSequenceClassification)
 
 from settings import (asr_input, nlu_input, nlu_model, speech2intent_input,
                       speech2intent_output)
@@ -30,11 +29,12 @@ def load_nlu_session(nlu_model_url):
     load the nlu model
     """
     tokenizer = AutoTokenizer.from_pretrained(nlu_model_url)
-    model = XLMRobertaForSequenceClassification.from_pretrained(nlu_model_url)
+    model = AutoModelForSequenceClassification.from_pretrained(nlu_model_url)
 
     print("nlu model loaded " + nlu_model_url)
     return tokenizer, model
 
+# preload the models
 session_nlu_tokenizer, session_nlu_model = load_nlu_session(nlu_model().url)
 asr_processor, asr_session = load_asr_session()
 
@@ -58,8 +58,10 @@ def run_asr(user_input: asr_input):
 # NLU API
 @app.post("/nlu/nlu_text_to_intent")
 def nlu_text_to_intent(user_input: nlu_input):
+    global session_nlu_tokenizer, session_nlu_model
+
     text_input = user_input.text_input
-    nlu_model_url = user_input.nlu_model_url
+    nlu_model_url = user_input.nlu_url
 
     # new nlu model
     if nlu_model_url != nlu_model().url:
@@ -99,4 +101,5 @@ async def get_home():
 
 
 if __name__ == "__main__":
+    import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

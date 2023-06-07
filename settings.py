@@ -15,12 +15,12 @@ class nlu_model(BaseModel):
     url: str = 'cartesinus/slurp-intent_baseline-xlm_r-en'
 
 class nlu_input(BaseModel):
-    nlu_model_url: nlu_model().url
+    nlu_url: str = nlu_model().url
     text_input: str
 
 class speech2intent_input(BaseModel):
-    nlu_model_url: nlu_model().url
-    speech_file_path: asr_input
+    nlu_url: str = nlu_model().url
+    speech_file_path: str
 
 class speech2intent_output(BaseModel):
     text: str
