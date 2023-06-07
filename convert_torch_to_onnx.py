@@ -1,6 +1,9 @@
-from transformers import Wav2Vec2ForCTC
-import torch
 import argparse
+import os
+
+import torch
+from transformers import Wav2Vec2ForCTC
+
 
 def convert_to_onnx(model_id_or_path, onnx_model_name):
     print(f"Converting {model_id_or_path} to onnx")
@@ -22,7 +25,7 @@ def convert_to_onnx(model_id_or_path, onnx_model_name):
 
 def quantize_onnx_model(onnx_model_path, quantized_model_path):
     print("Starting quantization...")
-    from onnxruntime.quantization import quantize_dynamic, QuantType
+    from onnxruntime.quantization import QuantType, quantize_dynamic
     quantize_dynamic(onnx_model_path,
                      quantized_model_path,
                      weight_type=QuantType.QUInt8)
@@ -45,6 +48,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # save paths
+    os.makedirs('models', exist_ok=True)
+    
     model_id_or_path = args.model
     onnx_model_name = 'models/' + model_id_or_path.split("/")[-1] + ".onnx"
     convert_to_onnx(model_id_or_path, onnx_model_name)
