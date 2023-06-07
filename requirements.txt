@@ -1,7 +1,12 @@
 transformers
 fastapi
 uvicorn
+pydantic
 onnxruntime
 pydub
 pytube
 python-multipart
+progress
+tabulate
+textdistance
+jiwer

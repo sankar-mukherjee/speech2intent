@@ -2,6 +2,16 @@
 
 Its built with FastAPI, pydantic, huggingface.
 
+# Setup
+
+Build the docker
+> sh docker_build.sh
+
+go inside docker
+> docker run -it -v $PWD:/workspace/speech2intent/ speech2intent bash
+
+
+# Details
 To start the REST API server (main.py) run 
 >  uvicorn main:app --reload
 
