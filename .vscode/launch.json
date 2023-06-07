@@ -21,9 +21,22 @@
             "justMyCode": false,
             "args":[
                 "--model=facebook/wav2vec2-base-960h",
-                // "--output=api/ml/models",
-
                 // "--quantize"
+              ]
+        },
+        {
+            "name": "slu_evaluaion",
+            "type": "python",
+            "request": "launch",
+            "program": "evaluation.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args":[
+                "--slurp_testset_filepath=data/slurp_testset.jsonl",
+                "--slurp_testset_audiodir=data/audio/slurp_real",
+                "--slurp_testset_no_examples=10",
+
+                "--nlu_url=ccoreilly/wav2vec2-large-100k-voxpopuli-catala",
               ]
         },
     ]

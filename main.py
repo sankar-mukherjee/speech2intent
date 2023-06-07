@@ -52,7 +52,7 @@ def run_asr(user_input: asr_input):
     prediction = np.argmax(onnx_outputs, axis=-1)
     transcript = asr_processor.decode(prediction.squeeze().tolist())
 
-    print('run_asr finished')
+    # print('run_asr finished')
     return {"transcript": transcript}
 
 # NLU API
@@ -72,7 +72,7 @@ def nlu_text_to_intent(user_input: nlu_input):
     predicted_class_id = logits.argmax().item()
     output = session_nlu_model.config.id2label[predicted_class_id]
 
-    print('nlu_text_to_intent finished')
+    # print('nlu_text_to_intent finished')
     return {"intent": output}
 
 
