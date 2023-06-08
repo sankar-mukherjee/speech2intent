@@ -8,7 +8,7 @@ Build the docker
 > sh scripts/docker_build.sh
 
 go inside docker
-> docker run -p 8000:80 -it -v $PWD:/workspace/speech2intent/ speech2intent bash
+> docker run -p 8080:8000 -it -v $PWD:/workspace/speech2intent/ speech2intent bash
 
 
 # Details

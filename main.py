@@ -35,7 +35,8 @@ def load_nlu_session(nlu_model_url):
     return tokenizer, model
 
 # preload the models
-session_nlu_tokenizer, session_nlu_model = load_nlu_session(nlu_model().url)
+current_nlu_model_url = nlu_model().url
+session_nlu_tokenizer, session_nlu_model = load_nlu_session(current_nlu_model_url)
 asr_processor, asr_session = load_asr_session()
 
 app = FastAPI()
@@ -58,15 +59,15 @@ def run_asr(user_input: asr_input):
 # NLU API
 @app.post("/nlu/nlu_text_to_intent")
 def nlu_text_to_intent(user_input: nlu_input):
-    global session_nlu_tokenizer, session_nlu_model
+    global session_nlu_tokenizer, session_nlu_model, current_nlu_model_url
 
     text_input = user_input.text_input
     nlu_model_url = user_input.nlu_url
 
-    # new nlu model
-    if nlu_model_url != nlu_model().url:
+    # Check if the nlu_model_url has changed
+    if current_nlu_model_url != nlu_model_url:
+        current_nlu_model_url = nlu_model_url
         session_nlu_tokenizer, session_nlu_model = load_nlu_session(nlu_model_url)
-        print('new model loaded: '+nlu_model_url)
 
     inputs = session_nlu_tokenizer(text_input, return_tensors="pt")
     logits = session_nlu_model(**inputs).logits
@@ -88,8 +89,10 @@ def speech_to_intent(user_input: speech2intent_input):
 
     # Call NLU API
     nlu_response = nlu_text_to_intent(
-            nlu_model_path=nlu_url,
+            nlu_input(
+            nlu_url=nlu_url,
             text_input=asr_response["transcript"]
+            )
         )
 
     return {"text": asr_response["transcript"], "intent": nlu_response['intent']}
