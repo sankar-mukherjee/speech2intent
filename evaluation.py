@@ -36,6 +36,7 @@ if __name__ == "__main__":
     slurp_testset_audiodir = args.slurp_testset_audiodir
     slurp_testset_filepath = args.slurp_testset_filepath
     slurp_testset_no_examples = args.slurp_testset_no_examples
+    nlu_url_id = args.nlu_url
 
     examples = load_gold_data(slurp_testset_filepath)
     # take only 'headset' files
@@ -56,7 +57,9 @@ if __name__ == "__main__":
         # sf.write(wav_path, audio_data, sample_rate)
 
         # speech2intent
-        result = speech_to_intent(speech2intent_input(speech_file_path=slurp_testset_audiodir+'/'+headset_id))
+        result = speech_to_intent(speech2intent_input(
+            speech_file_path=slurp_testset_audiodir+'/'+headset_id,
+            nlu_url=nlu_url_id))
         # WER
         WER.append(jiwer.wer(headset_example["text"].lower(), result['text'].lower()))
         # intent add

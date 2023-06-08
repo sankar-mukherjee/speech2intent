@@ -66,6 +66,7 @@ def nlu_text_to_intent(user_input: nlu_input):
     # new nlu model
     if nlu_model_url != nlu_model().url:
         session_nlu_tokenizer, session_nlu_model = load_nlu_session(nlu_model_url)
+        print('new model loaded: '+nlu_model_url)
 
     inputs = session_nlu_tokenizer(text_input, return_tensors="pt")
     logits = session_nlu_model(**inputs).logits
@@ -87,10 +88,8 @@ def speech_to_intent(user_input: speech2intent_input):
 
     # Call NLU API
     nlu_response = nlu_text_to_intent(
-            nlu_input(
             nlu_model_path=nlu_url,
             text_input=asr_response["transcript"]
-            )
         )
 
     return {"text": asr_response["transcript"], "intent": nlu_response['intent']}

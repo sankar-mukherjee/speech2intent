@@ -5,10 +5,10 @@ Its built with FastAPI, pydantic, huggingface.
 # Setup
 
 Build the docker
-> sh docker_build.sh
+> sh scripts/docker_build.sh
 
 go inside docker
-> docker run -it -v $PWD:/workspace/speech2intent/ speech2intent bash
+> docker run -p 8000:80 -it -v $PWD:/workspace/speech2intent/ speech2intent bash
 
 
 # Details
@@ -86,18 +86,12 @@ huggingface models
 
 Classifer performance is measured via the ‘headset’ subset of the SLURP test set.
 
-* full
-> python evaluation.py \
---slurp_testset_filepath=data/slurp_testset.jsonl \
---slurp_testset_audiodir=data/audio/slurp_real \
---nlu_url=ccoreilly/wav2vec2-large-100k-voxpopuli-catala
-
 * random 10 samples
-> python evaluation.py \
---slurp_testset_filepath=data/slurp_testset.jsonl \
---slurp_testset_audiodir=data/audio/slurp_real \
---nlu_url=ccoreilly/wav2vec2-large-100k-voxpopuli-catala \
---slurp_testset_no_examples=10
+> sh scripts/evauation.sh
+
+* full
+  * change : ${slurp_testset_no_examples:=None} in scripts/evauation.sh
+
 
 random 10 samples results
 ```
@@ -109,5 +103,22 @@ WER: 0.453
 ╘═════════════════════╧═════════════╧══════════╧═════════════╛ 
 ```
 
-* Download SLURP data via **download_audio.sh**
+* Download SLURP data via 
+> sh scripts/download_audio.sh 
 * https://github.com/pswietojanski/slurp/blob/master/dataset/slurp/test.jsonl  --> data/slurp_testset.jsonl 
+
+# Finetune New Model on SLURP dataset
+
+A fintuned model  
+> sankar1535/slurp-intent_baseline-distilbert-base-uncased
+
+was created via finuning pretrained huggingface model
+
+> distilbert-base-uncased
+
+train and infer Command. 
+> sh scripts/train_text_intent_classifer.sh
+
+> sh scripts/infer_text_intent_classifer.sh
+
+Traning data is taken from https://github.com/pswietojanski/slurp/blob/master/dataset/slurp/

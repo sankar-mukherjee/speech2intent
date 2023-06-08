@@ -35,8 +35,36 @@
                 "--slurp_testset_filepath=data/slurp_testset.jsonl",
                 "--slurp_testset_audiodir=data/audio/slurp_real",
                 "--slurp_testset_no_examples=10",
+                "--nlu_url=sankar1535/slurp-intent_baseline-distilbert-base-uncased",
+              ]
+        },
 
-                "--nlu_url=ccoreilly/wav2vec2-large-100k-voxpopuli-catala",
+
+        // train_text_intent_classifer
+        {
+            "name": "train_text_intent_classifer",
+            "type": "python",
+            "request": "launch",
+            "program": "text_intent_classifer/train.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args":[
+                "--slurp_train_filepath=data/train.jsonl",
+                "--slurp_val_filepath=data/devel.jsonl",
+                "--output_dir=models/slurp-intent_baseline-distilbert-base-uncased",
+                "--nlu_url=distilbert-base-uncased",
+              ]
+        },
+        {
+            "name": "infer_text_intent_classifer",
+            "type": "python",
+            "request": "launch",
+            "program": "old/text_intent_classifer/infer.py",
+            "console": "integratedTerminal",
+            "justMyCode": false,
+            "args":[
+                "--text=This was a masterpiece.",
+                "--model_dir=models/slurp-intent_baseline-distilbert-base-uncased",
               ]
         },
     ]

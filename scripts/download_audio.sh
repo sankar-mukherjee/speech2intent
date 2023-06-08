@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir -p data/audio
+mkdir -p data/audio1
 
 wget --help | grep -q '\--show-progress' && \
   PROGRESS_OPT="--show-progress --progress=bar:force" || PROGRESS_OPT=""
