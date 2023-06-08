@@ -2,6 +2,7 @@ import numpy as np
 import onnxruntime as rt
 import soundfile as sf
 from fastapi import FastAPI
+import os
 from transformers import (AutoTokenizer, Wav2Vec2Processor,
                           AutoModelForSequenceClassification)
 
@@ -16,6 +17,8 @@ def load_asr_session():
     processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-base-960h")
 
     ONNX_PATH = 'models/wav2vec2-base-960h.onnx'
+    if not os.path.exists(ONNX_PATH):
+        os.system('python convert_torch_to_onnx.py --model=facebook/wav2vec2-base-960h')
 
     sess_options = rt.SessionOptions()
     sess_options.graph_optimization_level = rt.GraphOptimizationLevel.ORT_ENABLE_ALL
