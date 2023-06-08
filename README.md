@@ -10,14 +10,19 @@ Build the docker
 Run
 > docker run -p 8008:8000 -d speech2intent:latest
 
+wait for couple of minutes and then go to http://127.0.0.1:8008/docs#/
+
+
+Alternatively you can run this command to go inside container 
+> docker run -p 8008:8000 -it -v $PWD:/workspace/speech2intent/ speech2intent:latest bash
+
+and then run 
+> uvicorn main:app --reload
+
 
 # Details
-To start the REST API server (main.py) run 
->  uvicorn main:app --reload
 
-Go to http://127.0.0.1:8008/docs#/
-
-There are 3 routes and input and expected output examples are give here. 
+There are 3 routes and input and expected output examples are given here. 
 ### Main API
 
 ```
@@ -70,30 +75,35 @@ output
 ```
 # Models and Functionalities
 
-huggingface models
-* ASR: facebook/wav2vec2-base-960h
-* NLU: cartesinus/slurp-intent_baseline-xlm_r-en
----
-* ASR model was converted to onnx model and saved in models/wav2vec2-base-960h.onnx 
+When starting the server for the first time:
+
+* ASR model ```facebook/wav2vec2-base-960h``` was downloaded and converted to onnx model and saved in ```models/wav2vec2-base-960h.onnx ```
 > python convert_torch_to_onnx.py --model=facebook/wav2vec2-base-960h
 
+* onnxruntime session was created with ```models/wav2vec2-base-960h.onnx```
+* nlu model loaded ```cartesinus/slurp-intent_baseline-xlm_r-en```
 
-* When the server starts 
-    * nlu model loaded cartesinus/slurp-intent_baseline-xlm_r-en
-    * onnxruntime session was created with models/wav2vec2-base-960h.onnx
+#### NOTE: ```"speech_file_path"```: in the all two APIs can only take wav files which are mounted with the container.
 
 # Evaluation
 
+
 Classifer performance is measured via the ‘headset’ subset of the SLURP test set.
 
-* random 10 samples
+* Download SLURP data via 
+> sh scripts/download_audio.sh 
+
+This will create a ```audio``` folder inside ```data``` folder.
+
+* copy https://github.com/pswietojanski/slurp/blob/master/dataset/slurp/test.jsonl  to  ```data/slurp_testset.jsonl``` 
+
+* Evaluate random 10 samples from ```data/slurp_testset.jsonl```
 > sh scripts/evauation.sh
 
-* full
-  * change : ${slurp_testset_no_examples:=None} in scripts/evauation.sh
+* For full dataset evaluation change  ```${slurp_testset_no_examples:=None}``` in ```scripts/evauation.sh```
 
 
-random 10 samples results
+* random 10 samples evaluation results
 ```
 WER: 0.453
 ╒═════════════════════╤═════════════╤══════════╤═════════════╕
@@ -102,10 +112,6 @@ WER: 0.453
 │ OVERALL             │      0.4000 │   0.4000 │      0.4000 │
 ╘═════════════════════╧═════════════╧══════════╧═════════════╛ 
 ```
-
-* Download SLURP data via 
-> sh scripts/download_audio.sh 
-* https://github.com/pswietojanski/slurp/blob/master/dataset/slurp/test.jsonl  --> data/slurp_testset.jsonl 
 
 # Finetune New Model on SLURP dataset
 

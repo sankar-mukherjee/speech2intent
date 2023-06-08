@@ -10,5 +10,6 @@ RUN pip install -r requirements.txt
 EXPOSE 8000
 
 COPY . .
+RUN mkdir /workspace/speech2intent/data
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
