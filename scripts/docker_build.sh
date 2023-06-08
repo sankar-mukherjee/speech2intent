@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-docker build . -t speech2intent
+docker build --no-cache -t speech2intent:latest .

@@ -7,15 +7,15 @@ Its built with FastAPI, pydantic, huggingface.
 Build the docker
 > sh scripts/docker_build.sh
 
-go inside docker
-> docker run -p 8080:8000 -it -v $PWD:/workspace/speech2intent/ speech2intent bash
+Run
+> docker run -p 8008:8000 -d speech2intent:latest
 
 
 # Details
 To start the REST API server (main.py) run 
 >  uvicorn main:app --reload
 
-Go to http://localhost:8000/docs#/
+Go to http://127.0.0.1:8008/docs#/
 
 There are 3 routes and input and expected output examples are give here. 
 ### Main API
